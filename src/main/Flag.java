@@ -1,3 +1,8 @@
+/** Flag
+ * 	Settings for Simulator Operations
+ * 	Implements Singleton Design Pattern
+ */
+
 package main;
 
 public class Flag {

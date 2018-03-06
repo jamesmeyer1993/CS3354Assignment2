@@ -13,15 +13,17 @@ import vendor.VendingMachine;
 public class Simulator implements Runnable{
 	
 	private String name;
-	private String valArgs[] = {"help", "flag"}; /* valid arguments */
+	private int status;
+	//private String valArgs[] = {"help", "flag"}; /* valid arguments */
 	private Flag flags;
 	private VendingMachine dummy;
+	private Operator neo;
+	private Flag flag;
 	
 	protected int simCount = 0;
 	
-	private Flag flag;
-	
-	public Simulator(String n, Flag f, byte[] rootLock) throws SingletonException{
+	public Simulator(String n, Flag f, byte[] rootLock) 
+			throws SingletonException{
 		simCount++;
 		if(simCount > 1)
 			throw new SingletonException();
@@ -29,24 +31,39 @@ public class Simulator implements Runnable{
 		flag = f;
 	}
 
-	@Override
 	public void run() {
 		boolean isRunning = true;
 		Scanner scan = new Scanner(System.in);
 		String input = null;
 		
-		System.out.print(name + " : Simulator instantiated.\n" +
-				name + " : Press 'q' or 'Q' to exit.");
+		System.out.print("Simulator : Simulator instantiated.\n" +
+				"Simulator : Press 'q' or 'Q' to exit.");
 		do{
 			input = scan.nextLine();
 			
 			switch(input.charAt(0)){
-				case 'q': System.exit(0); break;
-				case 'Q': System.exit(0); break;
+				case 'q': isRunning = false; status = 0; break;
+				case 'Q': isRunning = false; status = 0; break;
 				default: System.err.print(name + " : " + input.charAt(0) + " Unkown input."); break;
 			}
 		}while(isRunning);
+		
+		if(!isRunning)
+			exit(status);
 	}
+	
+	private void mkOperator(){
+		
+	}
+	
+	private void exit(int status){
+		System.out.print("Simulator : exiting...");
+		System.exit(status);
+	}
+	
+	/** Begin Main
+	 * @param String command line arguments
+	 */
 	
 	public static void main(String[] args) {
 		
@@ -72,13 +89,15 @@ public class Simulator implements Runnable{
 		
 		Simulator theMatrix;
 		Flag instFlag;
-		try {
+		
+		try 
+		{
 			instFlag = new Flag();
 			theMatrix = new Simulator(name, instFlag, hash.getHash());
+			
+			/** Begin simulation */
 			theMatrix.run();
-		} catch (SingletonException e) {
-			e.printStackTrace();
-		}
-
+		} 
+		catch (SingletonException e) {e.printStackTrace();}
 	}
 }
