@@ -18,6 +18,16 @@ public abstract class ListArray<T> implements ListADT<T>{
 		modCount = 0;
 	}
 	
+	/** at()
+	 * @param integer index for requesting item at point
+	 * @return generic type T
+	 *  */
+	public T at(int index){
+		if(index < rear-1)
+			throw new IndexOutOfBoundsException();
+		return list[index];
+	}
+	
 	public T removeFirst() {
 		T first = list[0];
 		
