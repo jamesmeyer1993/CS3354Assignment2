@@ -52,7 +52,7 @@ public class StackArray<T> implements StackADT<T>{
 	}
 
 	private void expandCapacity(){
-		// TODO Arrays.copyOf(stack, steack.length * 2)
+		//Arrays.copyOf(stack, steack.length * 2)
 		T[] temp = (T[]) (new Object[stack.length * 2]);
 		for(int i = 0; i < stack.length; i++){
 			temp[i] = stack[i];

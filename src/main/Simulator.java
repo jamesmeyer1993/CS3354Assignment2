@@ -8,32 +8,34 @@ package main;
 import java.util.Scanner;
 import crypto.SHA1;
 import currency.CurrencyUnit;
+import datastructures.StackArray;
 import vendor.Product;
 import vendor.VendingMachine;
 
 public class Simulator implements Runnable{
 	
-	private OpLong op[];
-		
-	/** @value Instance level values */
-	private String name;
-	private int status;
-	private Flag flags;
-	private VendingMachine dummy;
-	private Operator neo;
-	private Flag flag;
+	private OpLong op[];			/** @value list of long operation commands */
+	private String name;			/** @value of this simulation */
+	private int status;				/** @value general exit status */
+	private VendingMachine dummy;	/** @value simulated vending machine */
+	private Operator neo;			/** @value object the user acts as */
+	protected int simCount = 0;		/** @value maintains the singleness of the simulator class */
+	private StackArray<String> in;	/** @StackArray for evaluating command line arguments */
 	
-	protected int simCount = 0;
-	
-	public Simulator(String n, Flag f, byte[] rootLock) 
-			throws SingletonException{
+	/** Simulator
+	 * Constructor. @throws SingletonException because only one simulation may be run at a time.
+	 * @param String name, OpLong valid arguments, byte[] hash to lock the vending machine */
+	public Simulator(String n, OpLong[] vargs, byte[] rootLock) throws SingletonException{
 		simCount++;
 		if(simCount > 1)
 			throw new SingletonException();
 		name = n;
-		flag = f;
+		op = vargs;
 	}
 
+	/** Run
+	 * Actual main loop of the program.
+	 * Evaluates user input and acts accordingly. */
 	public void run() {
 		boolean isRunning = true;
 		Scanner scan = new Scanner(System.in);
@@ -43,30 +45,19 @@ public class Simulator implements Runnable{
 				"Simulator : Press 'q' or 'Q' to exit.");
 		this.printWalletInstructions();
 		
-		int argc;		/** for counting arguments */
-		String argv[];
 		do{
-			input = scan.nextLine();		/** read input */
-			argc = countArgs(input);		/** calculate size */
-			argv = parseArgs(input, argc);	/** memory allocate */
+			System.out.print("\n> ");
+			input = scan.nextLine();	/** read input */
+			in = parseArgs(input);		/** transpose args to a stack */
 
-			for(int i = 0; i < argc; i++){
-				System.out.print(argv[i] + " ");
+			for(int i = 0; i < in.size(); i++){
+				System.out.print(in.pop() + "\t");
 			}
 			
 		}while(isRunning);
 		
 		if(!isRunning)
 			exit(status);
-	}
-	
-	private int countArgs(String in){
-		int c = 0;
-		for(int i = 0; i < in.length(); i++){
-			if(in.charAt(i) == ' ')
-				c++;
-		}
-		return c;
 	}
 	
 	/** isValidArg - checks validity of command line input 
@@ -76,8 +67,7 @@ public class Simulator implements Runnable{
 
 		for(int i = 0; i < op.length; i++){
 			boolean found = false;
-			if( ( arg.equals(op[i].getOpLong()) || arg.equals(op[i].getOpShort()) )
-					&& remaining >= op[i].getOpCount() ){
+			if(arg.equals(op[i].getOpLong()) && remaining >= op[i].getOpCount() ){
 				op[i].setOpf(true);	/** @value flag */
 				return false;
 			}
@@ -88,18 +78,33 @@ public class Simulator implements Runnable{
 	/** parseArgs
 	 * @param String input, integer argument or space count in input 
 	 * @return Array of strings, parsed by the spaces of input */
-	private String[] parseArgs(String in, int c){
-		String out[] = new String[c];
-		int j = 0;
-		for(int i = 0; i < c; i++){
-			
-			do{
-				out[i] = out[i] + in.charAt(j);
-				j++;
-				/** Ignore the first case, because of the way the loop is exited.*/	
-			}while(in.charAt(j) != ' ');
+	private StackArray<String> parseArgs(String in){
+		
+		String p[];
+		char[] ch = in.toCharArray();
+		int c = 0;
+		for(int i = 0; i < ch.length; i++){
+			if(ch[i] == ' ')
+				c++;
 		}
-		return out;
+		
+		p = new String[c+1];
+		c = 0;
+		for(int i = 0; i < p.length; i++)
+			p[i] = "";
+		
+		for(int i = 0; i < ch.length; i++){
+			if(ch[i] != ' ')
+				p[c] = p[c] + ch[i];
+			else
+				c++;
+		}
+		
+		StackArray<String> r = new StackArray<String>(p.length);
+		for(int i = p.length; i > -1 ; i--)
+			r.push(p[i]);
+		
+		return r;
 	}
 	
 	private void printWalletInstructions(){
@@ -158,8 +163,8 @@ public class Simulator implements Runnable{
 				new OpLong<Integer>("penny",	(byte)1,	false),
 				new OpLong<Integer>("dime",		(byte)1,	false),
 			};
-			instFlag = new Flag();
-			theMatrix = new Simulator(name, instFlag, hash.getHash());
+			//instFlag = new Flag();
+			theMatrix = new Simulator(name, vargs, hash.getHash());
 			/** Begin simulation */
 			theMatrix.run();
 		} 
