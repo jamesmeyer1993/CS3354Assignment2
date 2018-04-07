@@ -1,4 +1,4 @@
-/* James Meyer
+/* UnawareCitizen
  * Object Oriented Design Patterns
  * 3/6/2017
  */
